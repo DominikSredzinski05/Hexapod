@@ -57,33 +57,33 @@ void Initial_Leg_Setup()
 {
 
 //returns servos to their home position
-legServo.WritePos(1, home_coxa, x, y);
-legServo.WritePos(2, home_femur, x, y);
-legServo.WritePos(3, home_tibia, x, y);
+legServo.WritePos(1, home_coxa, setup_speed, setup_acceleration);
+legServo.WritePos(2, home_femur, setup_speed, setup_acceleration);
+legServo.WritePos(3, home_tibia, setup_speed, setup_acceleration);
 delay(2000);
 
 //tests coxa movement
-legServo.WritePos(1, max_coxa, x, y);
+legServo.WritePos(1, max_coxa, setup_speed, setup_acceleration);
 delay(1000);
-legServo.WritePos(1, min_coxa, x, y);
+legServo.WritePos(1, min_coxa, setup_speed, setup_acceleration);
 delay(1000);
-legServo.WritePos(1, home_coxa, x, y);
+legServo.WritePos(1, home_coxa, setup_speed, setup_acceleration);
 delay(2000);
 
 //tests femur movement
-legServo.WritePos(2, max_femur, x, y);
+legServo.WritePos(2, max_femur, setup_speed, setup_acceleration);
 delay(1000);
-legServo.WritePos(2 min_femur, x, y);
+legServo.WritePos(2 min_femur, setup_speed, setup_acceleration);
 delay(1000);
-legServo.WritePos(2, home_femur, x, y);
+legServo.WritePos(2, home_femur, setup_speed, setup_acceleration);
 delay(2000);
 
 //tests tibia movement
-legServo.WritePos(3, max_tibia, x, y);
+legServo.WritePos(3, max_tibia, setup_speed, setup_acceleration);
 delay(1000);
-legServo.WritePos(3, min_tibia, x, y);
+legServo.WritePos(3, min_tibia, setup_speed, setup_acceleration);
 delay(1000);
-legServo.WritePos(3, home_tibia, x, y);
+legServo.WritePos(3, home_tibia, setup_speed, setup_acceleration);
 delay(2000);
 
 }
