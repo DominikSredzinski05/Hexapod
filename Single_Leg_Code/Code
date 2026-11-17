@@ -15,9 +15,9 @@ SMS_STS legServo;
 
 
 // define default angles for the servos
-int home_coxa = 90;
-int home_femur = 60;
-int home_tibia = 120;
+int home_coxa = [];
+int home_femur = [];
+int home_tibia = [];
 
 //function prototype for inverse kinematics (IK)
 void calculateIK(float x, float y, float z);
@@ -33,13 +33,6 @@ Serial2.begin(1000000, SERIAL_8N1, S_RXD, S_TXD);
 //attach serial2 to the servo
 legServo.pSerial = &Serial2
 
-//move to home position
-Initial_Leg_Setup();
-//let leg stay in home position for 2 secs after setup sequence
-delay(2000);
-}
-
-
 //sets parameters for servo speed and accelerartion
 int setup_speed = x
 int setup_acceleration = y
@@ -52,48 +45,116 @@ int max_femur = [];
 int min_tibia = [];
 int max_tibia = [];
 
-//function for initial leg set up
-void Initial_Leg_Setup()
+enum STATE_names //names for states, for code clarity
+{
+STATE_home_all,
+STATE_max_coxa,
+STATE_min_coxa,
+STATE_home_coxa,
+STATE_max_femur,
+STATE_min_femur,
+STATE_home_femur,
+STATE_max_tibia,
+STATE_min_tibia,
+STATE_home_tibia,
+STATE_idle
+};
+
+unsigned long previousMillis = 0;  //variables set to run timings
+unsigned long waitTime = 0;
+
+STATE_names STATE = STATE_idle;  //default state
+
+void Run_Leg_Setup() //opens setup function
 {
 
-//returns servos to their home position
-legServo.WritePos(1, home_coxa, setup_speed, setup_acceleration);
-legServo.WritePos(2, home_femur, setup_speed, setup_acceleration);
-legServo.WritePos(3, home_tibia, setup_speed, setup_acceleration);
-delay(2000);
+  if (STATE == STATE_idle) //skips rest of function if state is idle
+  {
+    return; 
+  }
 
-//tests coxa movement
-legServo.WritePos(1, max_coxa, setup_speed, setup_acceleration);
-delay(1000);
-legServo.WritePos(1, min_coxa, setup_speed, setup_acceleration);
-delay(1000);
-legServo.WritePos(1, home_coxa, setup_speed, setup_acceleration);
-delay(2000);
 
-//tests femur movement
-legServo.WritePos(2, max_femur, setup_speed, setup_acceleration);
-delay(1000);
-legServo.WritePos(2 min_femur, setup_speed, setup_acceleration);
-delay(1000);
-legServo.WritePos(2, home_femur, setup_speed, setup_acceleration);
-delay(2000);
+  if (millis() - previousMillis >= waitTime) //checks timing
+  {
+    previousMillis = millis(); //sets new time
 
-//tests tibia movement
-legServo.WritePos(3, max_tibia, setup_speed, setup_acceleration);
-delay(1000);
-legServo.WritePos(3, min_tibia, setup_speed, setup_acceleration);
-delay(1000);
-legServo.WritePos(3, home_tibia, setup_speed, setup_acceleration);
-delay(2000);
+    switch(STATE) //state machine
+    {      
+      case STATE_home_all:  //state to set all leg components to home position
+        legServo.WritePos(1, home_coxa, setup_speed, setup_acceleration);
+        legServo.WritePos(2, home_femur, setup_speed, setup_acceleration);
+        legServo.WritePos(3, home_tibia, setup_speed, setup_acceleration);
+        waitTime = 2000;
+        STATE = STATE_max_coxa;
+        break;
 
+      case STATE_max_coxa:  //state to set coxa to max
+        legServo.WritePos(1, max_coxa, setup_speed, setup_acceleration);
+        waitTime = 1000;
+        STATE = STATE_min_coxa;
+        break;
+
+      case STATE_min_coxa:  //state to set coxa to min
+        legServo.WritePos(1, min_coxa, setup_speed, setup_acceleration);
+        waitTime = 1000;
+        STATE = STATE_home_coxa;
+        break;
+
+      case STATE_home_coxa:  //state to set coxa to home
+        legServo.WritePos(1, home_coxa, setup_speed, setup_acceleration);
+        waitTime = 2000;
+        STATE = STATE_max_femur;
+        break;
+
+      case STATE_max_femur:  //state to set femur to max
+        legServo.WritePos(2, max_femur, setup_speed, setup_acceleration);
+        waitTime = 1000;
+        STATE = STATE_min_femur;
+        break;
+
+      case STATE_min_femur:  //state to set femur to min
+        legServo.WritePos(2, min_femur, setup_speed, setup_acceleration); // Fixed missing comma here
+        waitTime = 1000;
+        STATE = STATE_home_femur;
+        break;
+
+      case STATE_home_femur:  //state to set femur to home
+        legServo.WritePos(2, home_femur, setup_speed, setup_acceleration);
+        waitTime = 2000;
+        STATE = STATE_max_tibia;
+        break;
+
+      case STATE_max_tibia:  //state to set tibia to max
+        legServo.WritePos(3, max_tibia, setup_speed, setup_acceleration);
+        waitTime = 1000;
+        STATE = STATE_min_tibia;
+        break;
+
+      case STATE_min_tibia:  //state to set tibia to min
+        legServo.WritePos(3, min_tibia, setup_speed, setup_acceleration);
+        waitTime = 1000;
+        STATE = STATE_home_tibia;
+        break;
+
+      case STATE_home_tibia:  //state to set tibia to home
+        legServo.WritePos(3, home_tibia, setup_speed, setup_acceleration);
+        waitTime = 2000;
+        STATE = STATE_idle;
+        break;
+        
+      case STATE_idle:  //state to break the sequence upon it's completion
+        break;
+    }
+  }
 }
 
-
 //main loop. everything should come back to here
-void loop{
-//I guess we program it to walk in here? is that the initial goal
+void loop
+{
 
+Run_Leg_Setup() //must run constantly. set STATE = STATE_home_all to run initialisation.
 
+//put other code here
 }
 
 
@@ -118,3 +179,43 @@ int B= acos((L*L+J2L*J2L-J3L*J3L)/(2*));
 int degrees_to_signal(float degrees){
 return map(degrees, 0, 360, 0, 4095);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
