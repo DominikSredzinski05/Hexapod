@@ -8,32 +8,33 @@
 
 SMS_STS legServo; //create a servo controller object called legServo
 
-const float coxa_len = 30;  //define part lengths
-const float femur_len = 70;
-const float tibia_len = 100;
+const float coxa_len = 30.0;  //define part lengths
+const float femur_len = 70.0;
+const float tibia_len = 100.0;
 
-const int setup_speed = []; //servo speed and acceleration for setup sequence
-const int setup_acceleration = [];
+const int setup_speed = 1000; //servo speed and acceleration for setup sequence
+const int setup_acceleration = 30;
 
-int walk_speed = [];  //prieviously 1000              //servo speed and acceleration for the walk cycle
-int walk_acceleration = [];  //prieviously 30
+int walk_speed = 1000;              //servo speed and acceleration for the walk cycle
+int walk_acceleration = 30;
 
 const int signal_range = 4095;
 
-const float home_coxa_degrees = []; //sets parameters for servo setup positions in degrees
-const float home_femur_degrees = [];
-const float home_tibia_degrees = [];
-const float min_coxa_degrees = [];
-const float max_coxa_degrees = [];
-const float min_femur_degrees = [];
-const float max_femur_degrees = [];
-const float min_tibia_degrees = [];
-const float max_tibia_degrees = [];
+const float home_coxa_degrees = 0.0; //sets parameters for servo setup positions in degrees
+const float home_femur_degrees = 0.0;
+const float home_tibia_degrees = 0.0;
+const float min_coxa_degrees = -60.0;
+const float max_coxa_degrees = 60.0;
+const float min_femur_degrees = -80.0;
+const float max_femur_degrees = 80.0;
+const float min_tibia_degrees = -150.0;
+const float max_tibia_degrees = 150.0;
 
 constexpr int degrees_to_signal_comp(float degrees) //function to convert the degree of desired rotation to the servo signal in the compilation stage
 { 
 
-  return (int)((degrees / 360.0) * signal_range);
+  int sig = (2048.0 + ((degrees / 360.0) * signal_range));
+  return constrain(sig, 0, signal_range);
 
 }
 
@@ -199,6 +200,7 @@ joint_angles calculateIK_cartesian(float x, float y, float z)  //Inverse kinemat
   float horizontal_dist = sqrt(x*x + y*y) - coxa_len;
 
   float L = sqrt(horizontal_dist*horizontal_dist + z*z);  //calculate tibia angle
+  if (L < 0.001) L = 0.001;
   float tibia_cos_math = (femur_len*femur_len + tibia_len*tibia_len - L*L) / (2.0 * femur_len * tibia_len);
   tibia_cos_math = constrain(tibia_cos_math, -1.0, 1.0);
   float tibia_angle_rad = acos(tibia_cos_math);
@@ -235,6 +237,7 @@ joint_angles calculateIK_polar(float theta, float r, float z)  //Inverse kinemat
   float horizontal_dist = r - coxa_len; //calculate horizontal distance
 
   float L = sqrt(horizontal_dist*horizontal_dist + z*z);  //calculate tibia angle
+  if (L < 0.001) L = 0.001;
   float tibia_cos_math = (femur_len*femur_len + tibia_len*tibia_len - L*L) / (2.0 * femur_len * tibia_len);
   tibia_cos_math = constrain(tibia_cos_math, -1.0, 1.0);
   float tibia_angle_rad = acos(tibia_cos_math);
@@ -285,6 +288,7 @@ void movere_crus(joint_angles target_angles) //function to convert angles to sig
 int degrees_to_signal(float degrees) //function to convert the degree of desired rotation to the servo signal
 { 
 
-  return (int)((degrees / 360.0) * signal_range);
+  int sig = (2048.0 + ((degrees / 360.0) * signal_range));
+  return constrain(sig, 0, signal_range);
 
 }
